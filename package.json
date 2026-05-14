@@ -1,0 +1,11 @@
+{
+  "name": "buka_goosie_popup",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.27.0"
+  }
+}
