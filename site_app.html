@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buka Baker x Cafe Goosie — Interactive Popup App</title>
+<meta name="theme-color" content="#F7F4EE">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --cream: #0b0c0e; /* page background (dark) */
+    --ink: #F7F4EE;   /* primary text */
+    --ink-muted: #bdb8b2;
+    --ink-faint: #8f8b86;
+    --warm-white: #111214; /* elevated surface */
+    --accent: #D4A56A; /* warm accent on dark */
+    --accent-light: #3a2b1d;
+    --border: rgba(255,255,255,0.06);
+  }
+  /* Light theme overrides */
+  [data-theme="light"]{
+    --cream:#F7F4EE;
+    --ink:#1C1B18;
+    --ink-muted:#6B6A64;
+    --ink-faint:#C2C0B8;
+    --warm-white:#FDFCF8;
+    --accent:#8B6F47;
+    --accent-light:#E8DDD0;
+    --border:rgba(28,27,24,0.12);
+  }
+  html{ scroll-behavior:smooth; }
+  :root, html, body{ transition: background-color 0.45s ease, color 0.45s ease; }
+  body{ background:var(--cream); color:var(--ink); font-family:'DM Mono',monospace; font-weight:300; min-height:100vh; overflow-x:hidden; }
+
+  /* NAV */
+  nav{ position:fixed; top:0; left:0; right:0; z-index:120; display:flex; align-items:center; justify-content:space-between; padding:1.25rem 2rem; background:var(--cream); border-bottom:0.5px solid var(--border); }
+  .nav-logo{ font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-style:italic; letter-spacing:0.02em; color:var(--ink); text-decoration:none; }
+  .nav-links{ display:flex; gap:2rem; list-style:none; }
+  .nav-links a{ font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-muted); text-decoration:none; }
+  .nav-links a:hover{ color:var(--ink); }
+
+  /* Mobile nav toggle */
+  .nav-toggle{ display:none; background:transparent; border:1px solid var(--border); padding:0.5rem; border-radius:6px; cursor:pointer; }
+  .theme-toggle{ background:transparent; border:1px solid var(--border); padding:0.45rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.95rem; display:inline-flex; align-items:center; justify-content:center; color:var(--ink); }
+  .theme-toggle:hover{ border-color:var(--accent); color:var(--accent); }
+  .mobile-nav{ display:none; position:fixed; top:64px; left:0; right:0; background:var(--cream); border-top:0.5px solid var(--border); padding:1rem 1.25rem; z-index:110; }
+  .mobile-nav a{ display:block; padding:0.6rem 0; color:var(--ink-muted); text-decoration:none; font-size:0.95rem; }
+  .mobile-nav a:hover{ color:var(--ink); }
+
+  /* HERO */
+  .hero{ min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6rem 2rem 4rem; position:relative; }
+  .hero-eyebrow{ font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:1.5rem; }
+  .hero-title{ font-family:'Cormorant Garamond',serif; font-size:clamp(3.5rem,10vw,7rem); font-weight:300; line-height:0.95; margin-bottom:0.5rem; }
+  .hero-title em{ font-style:italic; color:var(--accent); }
+  .hero-sub{ font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-muted); margin-top:1.5rem; margin-bottom:2.5rem; }
+  .hero-details{ display:flex; gap:2.5rem; flex-wrap:wrap; justify-content:center; margin-top:1rem; }
+  .hero-detail{ display:flex; flex-direction:column; align-items:center; gap:0.3rem; }
+  .hero-detail-label{ font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); }
+  .hero-detail-value{ font-family:'Cormorant Garamond',serif; font-size:1.05rem; color:var(--ink); }
+  .scroll-hint{ position:absolute; bottom:2rem; left:50%; transform:translateX(-50%); font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); display:flex; flex-direction:column; align-items:center; gap:0.5rem; animation:fadeup 2s ease infinite; }
+  @keyframes fadeup{ 0%,100%{opacity:0.4;transform:translateX(-50%) translateY(0)} 50%{opacity:1;transform:translateX(-50%) translateY(-4px)} }
+
+  /* SECTION */
+  section{ padding:6rem 2rem; max-width:680px; margin:0 auto; }
+  .section-label{ font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:3rem; display:flex; align-items:center; gap:1rem; }
+  .section-label::after{ content:''; flex:1; height:0.5px; background:var(--border); }
+
+  /* MENU */
+  .menu-category{ font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; font-style:italic; color:var(--accent); margin-bottom:1.5rem; padding-bottom:0.75rem; border-bottom:0.5px solid var(--border); }
+  .menu-item{ display:flex; justify-content:space-between; align-items:baseline; padding:1rem 0; border-bottom:0.5px solid var(--border); cursor:pointer; transition:background 0.15s; }
+  .menu-item-left{ flex:1; }
+  .menu-item-name{ font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:400; margin-bottom:0.25rem; }
+  .menu-item-desc{ font-size:0.65rem; letter-spacing:0.06em; color:var(--ink-muted); line-height:1.6; }
+  .menu-item-tag{ font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.2rem 0.5rem; border:0.5px solid var(--border); color:var(--ink-muted); border-radius:2px; margin-left:1rem; white-space:nowrap; }
+
+  /* INTEREST */
+  .interest-wrap{ background:var(--warm-white); border:0.5px solid var(--border); border-radius:6px; padding:2.5rem; }
+  .interest-heading{ font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:300; margin-bottom:0.5rem; }
+  .interest-sub{ font-size:0.68rem; letter-spacing:0.08em; color:var(--ink-muted); line-height:1.7; margin-bottom:2rem; }
+  .pill-group{ display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1.75rem; }
+  .pill{ font-size:0.78rem; letter-spacing:0.04em; padding:0.6rem 0.9rem; border:0.5px solid var(--border); border-radius:99px; cursor:pointer; background:transparent; color:var(--ink); font-family:'DM Mono',monospace; transition:all 0.18s; user-select:none; }
+  .pill:hover{ border-color:var(--accent); color:var(--accent); }
+  .pill.selected{ background:var(--ink); color:var(--cream); border-color:var(--ink); }
+  .input-field{ width:100%; padding:0.7rem 0; background:transparent; border:none; border-bottom:0.5px solid var(--border); font-family:'DM Mono',monospace; font-size:0.75rem; color:var(--ink); outline:none; margin-bottom:1.25rem; }
+  .input-field::placeholder{ color:var(--ink-faint); }
+  .submit-btn{ font-family:'DM Mono',monospace; font-size:0.75rem; letter-spacing:0.12em; text-transform:uppercase; padding:0.85rem 2rem; background:var(--ink); color:var(--cream); border:none; cursor:pointer; border-radius:6px; }
+  .submit-btn[disabled]{ opacity:0.45; cursor:not-allowed; }
+  .success-msg{ display:none; font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-style:italic; color:var(--accent); margin-top:1rem; }
+
+  /* Footer */
+  footer{ border-top:0.5px solid var(--border); padding:2rem; text-align:center; font-size:0.62rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); }
+
+  /* Fade-in */
+  .fade-in{ opacity:0; transform:translateY(16px); transition:opacity 0.6s ease, transform 0.6s ease; }
+  .fade-in.visible{ opacity:1; transform:translateY(0); }
+
+  /* Small screens */
+  @media (max-width:600px){ nav{ padding:1rem 1.25rem; } .nav-links{ display:none; } .nav-toggle{ display:inline-flex; align-items:center; } .mobile-nav{ display:none; } .pill{ padding:0.7rem 1rem; font-size:0.92rem; } section{ padding:4rem 1.25rem; } .interest-wrap{ padding:1.5rem; } }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">Buka Baker x Cafe Goosie</a>
+  <div style="display:flex;gap:0.5rem;align-items:center;">
+    <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="mobileNav">☰</button>
+    <button class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Toggle theme">🌙</button>
+    <ul class="nav-links">
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#interest">Interest</a></li>
+      <li><a href="#details">Details</a></li>
+    </ul>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobileNav" role="navigation" aria-hidden="true">
+  <a href="#menu" onclick="closeMobileNav()">Menu</a>
+  <a href="#interest" onclick="closeMobileNav()">Register interest</a>
+  <a href="#details" onclick="closeMobileNav()">Details</a>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <p class="hero-eyebrow">A one-day popup</p>
+  <h1 class="hero-title">Buka Baker<br><em>x Cafe Goosie</em></h1>
+  <p class="hero-sub">Salt breads &amp; specialty coffee</p>
+  <div class="hero-details">
+    <div class="hero-detail"><span class="hero-detail-label">Date</span><span class="hero-detail-value">Sunday, 19 July 2025</span></div>
+    <div class="hero-detail"><span class="hero-detail-label">Location</span><span class="hero-detail-value">City, Melbourne</span></div>
+    <div class="hero-detail"><span class="hero-detail-label">Entry</span><span class="hero-detail-value">At the door</span></div>
+    <div class="hero-detail"><span class="hero-detail-label">Capacity</span><span class="hero-detail-value">50 guests</span></div>
+  </div>
+  <div class="scroll-hint">scroll</div>
+</div>
+
+<!-- MENU -->
+<section id="menu">
+  <p class="section-label">Menu</p>
+
+  <div class="menu-group fade-in">
+    <p class="menu-category">Salt Breads</p>
+    <div class="menu-item"><div class="menu-item-left"><p class="menu-item-name">OG Salt Bread</p><p class="menu-item-desc">The original. Buttery, pillowy, and perfectly salted.</p></div><span class="menu-item-tag">Original</span></div>
+    <div class="menu-item"><div class="menu-item-left"><p class="menu-item-name">Chilli Oil &amp; Tomato</p><p class="menu-item-desc">A savoury twist — fragrant chilli oil on a bright tomato base.</p></div><span class="menu-item-tag">Savoury</span></div>
+    <div class="menu-item"><div class="menu-item-left"><p class="menu-item-name">Red Bean Butter</p><p class="menu-item-desc">Sweet red bean paste with cold cultured butter. A favourite.</p></div><span class="menu-item-tag">Sweet</span></div>
+  </div>
+
+  <div class="menu-group fade-in" style="margin-top:3rem;">
+    <p class="menu-category">Coffee</p>
+    <div class="menu-item"><div class="menu-item-left"><p class="menu-item-name">Fruity Filter</p><p class="menu-item-desc">Peach. Served in glass.</p></div><span class="menu-item-tag">Hot</span></div>
+    <div class="menu-item"><div class="menu-item-left"><p class="menu-item-name">Floral Filter</p><p class="menu-item-desc">Jasmine, tea-like. Served in glass.</p></div><span class="menu-item-tag">Hot</span></div>
+    <div class="menu-item"><div class="menu-item-left"><p class="menu-item-name">Batch Brew</p><p class="menu-item-desc">Filter coffee. Clean and bright.</p></div><span class="menu-item-tag">Cold</span></div>
+    <div class="menu-item"><div class="menu-item-left"><p class="menu-item-name">Mont Blanc (Signature Drink)</p><p class="menu-item-desc">Cold, creamy, and refreshing.</p></div><span class="menu-item-tag">Hot</span></div>
+  </div>
+</section>
+
+<!-- INTEREST -->
+<section id="interest">
+  <p class="section-label">Register interest</p>
+  <div class="interest-wrap fade-in">
+    <h2 class="interest-heading">What are you ordering?</h2>
+    <p class="interest-sub">Help us prepare by letting us know what you're keen on. No commitment needed — we just want to bake and brew the right amounts.</p>
+
+    <p class="interest-q">Breads you'd like</p>
+    <div class="pill-group" id="bread-pills">
+      <button class="pill" data-group="bread" data-val="og">OG Salt Bread</button>
+      <button class="pill" data-group="bread" data-val="chilli">Chilli Oil &amp; Tomato</button>
+      <button class="pill" data-group="bread" data-val="redbean">Red Bean Butter</button>
+      <button class="pill" data-group="bread" data-val="all">All three!</button>
+    </div>
+
+    <p class="interest-q">Drinks you'd like</p>
+    <div class="pill-group" id="drink-pills">
+      <button class="pill" data-group="drink" data-val="fruity">Fruity Filter</button>
+      <button class="pill" data-group="drink" data-val="floral">Floral Filter</button>
+      <button class="pill" data-group="drink" data-val="batch">Batch Brew</button>
+      <button class="pill" data-group="drink" data-val="signature">Signature Drink</button>
+    </div>
+
+    <p class="interest-q">Your name (optional)</p>
+    <input class="input-field" type="text" id="name-input" placeholder="First name or nickname" />
+
+    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+      <button class="submit-btn" id="submit-btn" onclick="submitInterest()">Submit interest</button>
+      <button class="submit-btn" id="view-saved-btn" style="background:transparent;color:var(--ink);border:1px solid var(--border);" onclick="showSaved()">View saved</button>
+    </div>
+
+    <p class="success-msg" id="success-msg">Thanks — we'll see you on the 19th ✦</p>
+    <div id="saved-list" style="display:none;margin-top:1rem;font-size:0.9rem;color:var(--ink-muted);"></div>
+  </div>
+</section>
+
+<!-- DETAILS -->
+<section id="details">
+  <p class="section-label">Details</p>
+  <div class="fade-in">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;">
+      <div><p style="font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:0.5rem;">When</p><p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;">Sunday<br>19 July 2025</p></div>
+      <div><p style="font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:0.5rem;">Where</p><p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;">City, Melbourne<br><span style="font-size:0.75rem;color:var(--ink-muted);">Exact address via invite</span></p></div>
+      <div><p style="font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:0.5rem;">Entry</p><p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;">At the door<br><span style="font-size:0.75rem;color:var(--ink-muted);">Covers labour &amp; running costs</span></p></div>
+      <div><p style="font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:0.5rem;">Capacity</p><p style="font-family:'Cormorant Garamond',serif;font-size:1.1rem;">50 guests<br><span style="font-size:0.75rem;color:var(--ink-muted);">Intimate &amp; capped</span></p></div>
+    </div>
+    <p style="font-size:0.68rem;line-height:1.9;color:var(--ink-muted);">Buka Baker x Cafe Goosie is a one-day popup hosted by two friends — a baker and a barista. Expect freshly baked salt breads in three flavours, specialty coffee served in glass, good music, and a relaxed afternoon atmosphere.</p>
+  </div>
+</section>
+
+<footer>Buka Baker x Cafe Goosie &nbsp;·&nbsp; Melbourne &nbsp;·&nbsp; 19 July 2025</footer>
+
+<!-- Enhanced JS: mobile nav, pills, localStorage + share/copy -->
+<script>
+  // Theme (default: dark) with GSAP animations
+  (function applyThemeFromStorage(){
+    const stored = localStorage.getItem('cafe_theme');
+    const theme = stored || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if(meta){ meta.setAttribute('content', theme === 'dark' ? '#0b0c0e' : '#F7F4EE'); }
+    const tbtn = document.getElementById('themeToggle');
+    if(tbtn){ tbtn.textContent = theme === 'dark' ? '🌙' : '☀️'; tbtn.setAttribute('aria-pressed', theme === 'dark'); }
+  })();
+
+  const themeToggle = document.getElementById('themeToggle');
+  const darkVars = {
+    '--cream': '#0b0c0e','--ink': '#F7F4EE','--ink-muted':'#bdb8b2','--ink-faint':'#8f8b86','--warm-white':'#111214','--accent':'#D4A56A','--accent-light':'#3a2b1d','--border':'rgba(255,255,255,0.06)'
+  };
+  const lightVars = {
+    '--cream':'#F7F4EE','--ink':'#1C1B18','--ink-muted':'#6B6A64','--ink-faint':'#C2C0B8','--warm-white':'#FDFCF8','--accent':'#8B6F47','--accent-light':'#E8DDD0','--border':'rgba(28,27,24,0.12)'
+  };
+  function animateThemeTo(vars){
+    if(window.gsap){
+      const cssObj = {};
+      Object.keys(vars).forEach(k=> cssObj[k] = vars[k]);
+      gsap.to(document.documentElement, {duration:0.6, ease:'power2.out', css: cssObj});
+    } else {
+      Object.entries(vars).forEach(([k,v])=> document.documentElement.style.setProperty(k, v));
+    }
+  }
+  function setTheme(t){
+    const target = t === 'dark' ? darkVars : lightVars;
+    animateThemeTo(target);
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem('cafe_theme', t);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if(meta){ meta.setAttribute('content', t === 'dark' ? '#0b0c0e' : '#F7F4EE'); }
+    if(themeToggle){ themeToggle.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false'); themeToggle.textContent = t === 'dark' ? '🌙' : '☀️'; }
+  }
+  if(themeToggle){ themeToggle.addEventListener('click', ()=>{ const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; setTheme(current === 'dark' ? 'light' : 'dark'); }); }
+
+  // Mobile nav
+  const navToggle = document.getElementById('navToggle');
+  const mobileNav = document.getElementById('mobileNav');
+  const mobileNavAnim = { open: ()=>{ mobileNav.style.display='block'; mobileNav.setAttribute('aria-hidden','false'); if(window.gsap){ gsap.fromTo(mobileNav, {y:-8, opacity:0}, {y:0, opacity:1, duration:0.28, ease:'power2.out'}); } }, close: ()=>{ if(window.gsap){ gsap.to(mobileNav, {y:-8, opacity:0, duration:0.22, ease:'power2.in', onComplete: ()=>{ mobileNav.style.display='none'; mobileNav.setAttribute('aria-hidden','true'); }}); } else { mobileNav.style.display='none'; mobileNav.setAttribute('aria-hidden','true'); } } };
+  navToggle && navToggle.addEventListener('click', () => {
+    const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+    navToggle.setAttribute('aria-expanded', String(!expanded));
+    if(expanded) mobileNavAnim.close(); else mobileNavAnim.open();
+  });
+  function closeMobileNav(){ navToggle.setAttribute('aria-expanded','false'); mobileNavAnim.close(); }
+
+  // Pills selection (toggle) with better hit target for touch
+  const allPills = document.querySelectorAll('.pill');
+  allPills.forEach(p => p.addEventListener('click', () => {
+    const selecting = !p.classList.contains('selected');
+    p.classList.toggle('selected');
+    if(window.gsap){ gsap.fromTo(p, {scale:0.96}, {scale:1.06, duration:0.18, yoyo:true, repeat:1, ease:'power1.out'}); }
+  }));
+
+  // Intersection observer for fade-in using GSAP
+  const observer = new IntersectionObserver((entries)=>{ entries.forEach(e=>{ if(e.isIntersecting){ if(window.gsap){ gsap.to(e.target, {duration:0.6, opacity:1, y:0, ease:'power2.out', overwrite:true}); } else { e.target.classList.add('visible'); } } }); }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-in').forEach(el => { if(window.gsap){ gsap.set(el, {opacity:0, y:16}); } observer.observe(el); });
+
+  // Submit interest: POST to serverless endpoint (with local fallback)
+  function submitInterest(){
+    const breads = [...document.querySelectorAll('.pill[data-group="bread"].selected')].map(p=>p.dataset.val);
+    const drinks = [...document.querySelectorAll('.pill[data-group="drink"].selected')].map(p=>p.dataset.val);
+    const name = document.getElementById('name-input').value.trim();
+
+    if(breads.length === 0 && drinks.length === 0){
+      alert('Please select at least one item you\'re interested in.');
+      return;
+    }
+
+    const entry = { name: name || 'Anonymous', breads, drinks, ts: new Date().toISOString() };
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Sending...';
+
+    // Try to POST to serverless API. If it fails, save locally as a fallback.
+    fetch('/api/submit-interest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry),
+    }).then(async (res) => {
+      if(res.ok){
+        // success
+        btn.textContent = 'Saved';
+        document.getElementById('success-msg').style.display = 'block';
+
+        // Also save locally as a backup
+        const key = 'cafe_goosie_interest_v1';
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.push(entry);
+        localStorage.setItem(key, JSON.stringify(existing));
+
+        if(window.gsap){ gsap.fromTo('#success-msg',{scale:0.98, opacity:0},{scale:1, opacity:1, duration:0.45, ease:'back.out(1.2)'}); gsap.fromTo(btn,{scale:1},{scale:1.02, duration:0.12, yoyo:true, repeat:1}); }
+
+        // Offer share/copy like before
+        const shareData = {
+          title: 'I\'m interested — Buka Baker x Cafe Goosie',
+          text: `${entry.name} — Breads: ${entry.breads.join(', ') || 'none'}; Drinks: ${entry.drinks.join(', ') || 'none'}`,
+          url: location.href
+        };
+        if(navigator.share){
+          setTimeout(()=>{
+            if(confirm('Share your interest with friends?')){
+              navigator.share(shareData).catch(()=>{/* ignore */});
+            }
+          }, 350);
+        } else {
+          setTimeout(()=>{
+            if(confirm('Copy a summary of your interest to clipboard?')){
+              const text = `${shareData.title}\n${shareData.text}\n${shareData.url}`;
+              navigator.clipboard && navigator.clipboard.writeText(text).then(()=>alert('Copied to clipboard'), ()=>alert('Copy failed'));
+            }
+          }, 350);
+        }
+      } else {
+        // server returned error
+        const data = await res.json().catch(()=>({}));
+        alert('Failed to save interest: ' + (data.error || res.statusText));
+        btn.disabled = false; btn.textContent = 'Submit interest';
+      }
+    }).catch((err) => {
+      // network error - fallback to localStorage
+      const key = 'cafe_goosie_interest_v1';
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      existing.push(entry);
+      localStorage.setItem(key, JSON.stringify(existing));
+      btn.textContent = 'Saved (offline)';
+      document.getElementById('success-msg').style.display = 'block';
+      if(window.gsap){ gsap.fromTo('#success-msg',{scale:0.98, opacity:0},{scale:1, opacity:1, duration:0.45, ease:'back.out(1.2)'}); }
+      console.error('Submit failed, saved locally', err);
+    });
+  }
+
+  // View saved entries (for the current device)
+  function showSaved(){
+    const key = 'cafe_goosie_interest_v1';
+    const saved = JSON.parse(localStorage.getItem(key) || '[]');
+    const container = document.getElementById('saved-list');
+    if(saved.length === 0){ container.style.display='block'; container.textContent='No saved interest yet.'; return; }
+    container.style.display='block';
+    container.innerHTML = saved.slice(-10).reverse().map((s, i) => {
+      const d = new Date(s.ts); return `<div style="padding:0.5rem 0;border-bottom:1px dashed var(--border);">`+
+        `<div style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;">${escapeHtml(s.name)}</div>`+
+        `<div style="font-size:0.82rem;color:var(--ink-muted);">Breads: ${s.breads.join(', ') || '-'} &nbsp;·&nbsp; Drinks: ${s.drinks.join(', ') || '-'} &nbsp;·&nbsp; ${d.toLocaleString()}</div>`+
+      `</div>`;
+    }).join('');
+  }
+
+  // tiny helper to escape HTML for list rendering
+  function escapeHtml(str){ return String(str).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  // accessibility: close mobile nav on link click via focusout (optional)
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ closeMobileNav(); } });
+
+  // optional: pre-select saved choices if previously saved
+  (function hydrateFromLast(){
+    const key='cafe_goosie_interest_v1';
+    const saved = JSON.parse(localStorage.getItem(key)||'[]');
+    if(!saved.length) return;
+    const last = saved[saved.length-1];
+    document.getElementById('name-input').value = last.name && last.name !== 'Anonymous' ? last.name : '';
+    if(last.breads){ last.breads.forEach(val=>{ const p=document.querySelector(`.pill[data-group=\"bread\"][data-val=\"${CSS.escape(val)}\"]`); p && p.classList.add('selected'); }); }
+    if(last.drinks){ last.drinks.forEach(val=>{ const p=document.querySelector(`.pill[data-group=\"drink\"][data-val=\"${CSS.escape(val)}\"]`); p && p.classList.add('selected'); }); }
+  })();
+</script>
+</body>
+</html>
